@@ -1,1 +1,2 @@
 # GameDevClubMultiplayerDemo
+This GitHub respository holds the Unity project for a live demo for the game development club at Clemson University. The project was created using the Unity version 6000.4.0f1.
