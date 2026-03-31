@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class CompleteGameBoardUI : MonoBehaviour {
     public static CompleteGameBoardUI Instance { get; private set; }
@@ -50,7 +51,17 @@ public class CompleteGameBoardUI : MonoBehaviour {
         exitButton.onClick.AddListener(() => { Application.Quit(); });
     }
 
-    public void SetGridTile(int row, int column, CompleteConnectFourGameLogic.BoardTileStatus playerTile) {
+    private void Start() {
+        CompleteConnectFourGameLogic.Instance.OnBoardChanged += CompleteConnectFourGameLogic_OnBoardChanged;
+        CompleteConnectFourGameLogic.Instance.OnPlayerTurnChanged += CompleteConnectFourGameLogic_OnPlayerTurnChanged;
+        CompleteConnectFourGameLogic.Instance.OnPlayerWon += CompleteConnectFourGameLogic_OnPlayerWon;
+    }
+
+    private void CompleteConnectFourGameLogic_OnBoardChanged(object sender, CompleteConnectFourGameLogic.OnBoardChangedEventArgs e) {
+        int row = e.row;
+        int column = e.column;
+        CompleteConnectFourGameLogic.BoardTileStatus playerTile = e.newTileValue;
+
         Transform columnObject = columnButtons[column].transform;
         GameObject gridTile = columnObject.GetChild(CompleteConnectFourGameLogic.NUM_ROWS - 1 - row).gameObject;
 
@@ -69,7 +80,11 @@ public class CompleteGameBoardUI : MonoBehaviour {
         }
     }
 
-    public void SetPlayerTurnText(CompleteConnectFourGameLogic.BoardTileStatus playerTile, bool isLocalPlayersTurn) {
+    private void CompleteConnectFourGameLogic_OnPlayerTurnChanged(object sender, CompleteConnectFourGameLogic.OnPlayerTurnChangedEventArgs e) {
+        CompleteConnectFourGameLogic.BoardTileStatus playerTile = e.newPlayerTurn;
+        bool isLocalPlayersTurn = e.isItMyTurn;
+
+
         switch (playerTile) {
             case CompleteConnectFourGameLogic.BoardTileStatus.Player1:
                 playerTurnText.text = "Host's turn";
@@ -89,7 +104,9 @@ public class CompleteGameBoardUI : MonoBehaviour {
         }
     }
 
-    public void SetPlayerWonText(CompleteConnectFourGameLogic.BoardTileStatus playerWon) {
+    private void CompleteConnectFourGameLogic_OnPlayerWon(object sender, CompleteConnectFourGameLogic.OnPlayerWonEventArgs e) {
+        CompleteConnectFourGameLogic.BoardTileStatus playerWon = e.playerWhoWon;
+        
         playerWonText.gameObject.SetActive(true);
         if (playerWon == CompleteConnectFourGameLogic.BoardTileStatus.Player1) {
             playerWonText.text = "Host wins!";

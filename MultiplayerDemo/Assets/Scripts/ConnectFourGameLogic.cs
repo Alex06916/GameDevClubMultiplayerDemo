@@ -1,7 +1,42 @@
+using System;
 using UnityEngine;
 
 public class ConnectFourGameLogic : MonoBehaviour {
     public static ConnectFourGameLogic Instance { get; private set; }
+
+    // OnBoardChanged event
+    public event EventHandler<OnBoardChangedEventArgs> OnBoardChanged;
+    public class OnBoardChangedEventArgs : EventArgs {
+        public int row;
+        public int column;
+        public BoardTileStatus newTileValue;
+
+        public OnBoardChangedEventArgs(int row, int column, BoardTileStatus newTileValue) {
+            this.row = row;
+            this.column = column;
+            this.newTileValue = newTileValue;
+        }
+    }
+
+    // OnPlayerTurnChanged event
+    public event EventHandler<OnPlayerTurnChangedEventArgs> OnPlayerTurnChanged;
+    public class OnPlayerTurnChangedEventArgs : EventArgs {
+        public BoardTileStatus newPlayerTurn;
+
+        public OnPlayerTurnChangedEventArgs(BoardTileStatus newPlayerTurn) {
+            this.newPlayerTurn = newPlayerTurn;
+        }
+    }
+
+    // OnPlayerWon event
+    public event EventHandler<OnPlayerWonEventArgs> OnPlayerWon;
+    public class OnPlayerWonEventArgs : EventArgs {
+        public BoardTileStatus playerWhoWon;
+
+        public OnPlayerWonEventArgs(BoardTileStatus playerWhoWon) {
+            this.playerWhoWon = playerWhoWon;
+        }
+    }
 
     public enum BoardTileStatus {
         None,
@@ -47,13 +82,13 @@ public class ConnectFourGameLogic : MonoBehaviour {
             }
         }
 
-        GameBoardUI.Instance.SetGridTile(row, columnNumber, currentPlayer);
+        OnBoardChanged?.Invoke(this, new OnBoardChangedEventArgs(row, columnNumber, currentPlayer));
 
         BoardTileStatus playerWonStatus = DidAPlayerWin(row, columnNumber);
         if (playerWonStatus == BoardTileStatus.None) {
             TogglePlayerTurn();
         } else {
-            GameBoardUI.Instance.SetPlayerWonText(playerWonStatus);
+            OnPlayerWon?.Invoke(this, new OnPlayerWonEventArgs(playerWonStatus));
             currentPlayer = BoardTileStatus.None;
         }
     }
@@ -69,12 +104,11 @@ public class ConnectFourGameLogic : MonoBehaviour {
     }
 
     private void SetPlayerTurnText() {
-        GameBoardUI.Instance.SetPlayerTurnText(currentPlayer);
+        OnPlayerTurnChanged?.Invoke(this, new OnPlayerTurnChangedEventArgs(currentPlayer));
     }
 
     private BoardTileStatus DidAPlayerWin(int startingRow, int startingColumn) {
         BoardTileStatus testPlayer = board[startingRow, startingColumn];
-        // Test hoizontal space
         int amountLeft = CountTilesInDirection(startingRow, startingColumn, -1, 0, testPlayer);
         int amountRight = CountTilesInDirection(startingRow, startingColumn, 1, 0, testPlayer);
 

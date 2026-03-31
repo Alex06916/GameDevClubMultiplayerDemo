@@ -37,7 +37,17 @@ public class GameBoardUI : MonoBehaviour {
         exitButton.onClick.AddListener(() => { Application.Quit(); });
     }
 
-    public void SetGridTile(int row, int column, ConnectFourGameLogic.BoardTileStatus playerTile) {
+    private void Start() {
+        ConnectFourGameLogic.Instance.OnBoardChanged += ConnectFourGameLogic_OnBoardChanged;
+        ConnectFourGameLogic.Instance.OnPlayerTurnChanged += ConnectFourGameLogic_OnPlayerTurnChanged;
+        ConnectFourGameLogic.Instance.OnPlayerWon += ConnectFourGameLogic_OnPlayerWon;
+    }
+
+    private void ConnectFourGameLogic_OnBoardChanged(object sender, ConnectFourGameLogic.OnBoardChangedEventArgs e) {
+        int row = e.row;
+        int column = e.column;
+        ConnectFourGameLogic.BoardTileStatus playerTile = e.newTileValue;
+
         Transform columnObject = columnButtons[column].transform;
         GameObject gridTile = columnObject.GetChild(ConnectFourGameLogic.NUM_ROWS - 1 - row).gameObject;
 
@@ -56,7 +66,9 @@ public class GameBoardUI : MonoBehaviour {
         }
     }
 
-    public void SetPlayerTurnText(ConnectFourGameLogic.BoardTileStatus playerTile) {
+    private void ConnectFourGameLogic_OnPlayerTurnChanged(object sender, ConnectFourGameLogic.OnPlayerTurnChangedEventArgs e) {
+        ConnectFourGameLogic.BoardTileStatus playerTile = e.newPlayerTurn;
+        
         switch (playerTile) {
             case ConnectFourGameLogic.BoardTileStatus.Player1:
                 playerTurnText.text = "Host's turn";
@@ -70,7 +82,9 @@ public class GameBoardUI : MonoBehaviour {
         }
     }
 
-    public void SetPlayerWonText(ConnectFourGameLogic.BoardTileStatus playerWon) {
+    private void ConnectFourGameLogic_OnPlayerWon(object sender, ConnectFourGameLogic.OnPlayerWonEventArgs e) {
+        ConnectFourGameLogic.BoardTileStatus playerWon = e.playerWhoWon;
+
         playerWonText.gameObject.SetActive(true);
         if (playerWon == ConnectFourGameLogic.BoardTileStatus.Player1) {
             playerWonText.text = "Host wins!";
